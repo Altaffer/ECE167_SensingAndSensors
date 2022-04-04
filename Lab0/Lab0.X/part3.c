@@ -79,19 +79,20 @@ int main(void) {
         printf("Making some Music");
         ToneGeneration_ToneOn();
         while(1){
-            if (BUTTON_STATES = BUTTON_EVENT_1UP){
+            uint8_t c = ButtonsCheckEvents();
+            if (c == BUTTON_EVENT_1UP){
                 ToneGeneration_SetFrequency((500 + movingAv()));
             }
-            else if (BUTTON_STATES == BUTTON_EVENT_2UP){
+            else if (c == BUTTON_EVENT_2UP){
                 ToneGeneration_SetFrequency((1000 + movingAv()));
             }
-            else if (BUTTON_STATES == BUTTON_EVENT_3UP){
+            else if (c == BUTTON_EVENT_3UP){
                 ToneGeneration_SetFrequency((1500 + movingAv()));
             }
-            else if (BUTTON_STATES == BUTTON_EVENT_4UP){
+            else if (c == BUTTON_EVENT_4UP){
                 ToneGeneration_SetFrequency((2000 + movingAv()));
             }
-            else if(BUTTON_EVENT_NONE){
+            else if(c == BUTTON_EVENT_NONE){
                 ToneGeneration_SetFrequency((movingAv()));
             }
         }
