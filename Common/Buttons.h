@@ -18,7 +18,7 @@
 
 // We rely on this file to define various macros for working with the hardware buttons.
 #include "BOARD.h"
-
+#include "xc.h"
 /**
  * Specify the number of samples that must be the same to be for a change in button state to be
  * recognized. 
