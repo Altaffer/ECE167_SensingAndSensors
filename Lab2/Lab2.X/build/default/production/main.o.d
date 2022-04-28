@@ -1,13 +1,13 @@
 build/default/production/main.o: main.c ../../Common/BOARD.h \
- ../../Common/serial.h ../../Common/AD.h ../../Common/ToneGeneration.h \
- ../../Common/timers.h
+ ../../Common/serial.h ../../Common/pwm.h ../../Common/QEI.h \
+ ../../Common/BOARD.h
 
 ../../Common/BOARD.h:
 
 ../../Common/serial.h:
 
-../../Common/AD.h:
+../../Common/pwm.h:
 
-../../Common/ToneGeneration.h:
+../../Common/QEI.h:
 
-../../Common/timers.h:
+../../Common/BOARD.h:

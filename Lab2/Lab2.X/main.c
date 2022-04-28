@@ -11,9 +11,8 @@
 // including common headers
 #include "BOARD.h"
 #include "serial.h"
-#include "AD.h"
-#include "ToneGeneration.h"
-#include "timers.h"
+#include "pwm.h"
+#include "QEI.h"
 
 // definitions for ifdef
 #define PART1
@@ -32,19 +31,23 @@
 int main(void) {
     // initializing libraries
     BOARD_Init();
-    AD_Init();
-    ToneGeneration_Init();
-    TIMERS_Init();
+    SERIAL_Init();
+    PWM_Init();
+    QEI_Init();
 
-    // initializing pins
-    AD_AddPins(AD_A2);
-    AD_AddPins(AD_A1);
+    // add pins
+    PWM_AddPins(PWM_PORTY10);
+    PWM_AddPins(PWM_PORTY04);
+    PWM_AddPins(PWM_PORTY12);
+    
+    
+    PWM_SetFrequency(PWM_1KHZ);
 
     /*****
      Part1
      *****/
 #ifdef PART1
-
+    
 #endif
 
     /*****

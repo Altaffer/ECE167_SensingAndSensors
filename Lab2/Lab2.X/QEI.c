@@ -1,149 +1,139 @@
-/* ************************************************************************** */
-/** Descriptive File Name
+#include <stdio.h>
+#include <stdlib.h>
 
-  @Company
-    Company Name
+// including common headers
+#include "BOARD.h"
+#include "serial.h"
+#include <xc.h>
+#include <sys/attribs.h>
+#include "QEI.h"
+#include "pwm.h"
 
-  @File Name
-    filename.c
+/******************
+ LOCAL VARIABLES
+ ******************/
+static int PinA;
+static int PinB;
+int counter;
 
-  @Summary
-    Brief description of the file.
+typedef enum {
+    Up,
+    Right,
+    Down,
+    Left,
+} State;
 
-  @Description
-    Describe the purpose of this file.
- */
-/* ************************************************************************** */
+static State curState;
 
-/* ************************************************************************** */
-/* ************************************************************************** */
-/* Section: Included Files                                                    */
-/* ************************************************************************** */
-/* ************************************************************************** */
+int LED_R[] = {255, 255, 255, 255, 255, 255, 255, 255, 255, 213, 148, 89, 55, 46, 0, 0, 0, 0, 0, 0, 0, 42, 168};
+int LED_G[] = {255, 194, 121, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 113, 189, 255, 255, 255, 255, 255, 255, 255};
+int LED_B[] = {0, 0, 0, 0, 0, 32, 121, 193, 255, 255, 255, 255, 255, 255, 255, 255, 255, 191, 118, 7, 0, 0, 0};
 
-/* This section lists the other files that are included in this file.
- */
+/******************
+ HELPER FUNCTIONS
+ ******************/
 
-/* TODO:  Include other files here if needed. */
-
-
-/* ************************************************************************** */
-/* ************************************************************************** */
-/* Section: File Scope or Global Data                                         */
-/* ************************************************************************** */
-/* ************************************************************************** */
-
-/*  A brief description of a section can be given directly below the section
-    banner.
- */
-
-/* ************************************************************************** */
-/** Descriptive Data Item Name
-
-  @Summary
-    Brief one-line summary of the data item.
-    
-  @Description
-    Full description, explaining the purpose and usage of data item.
-    <p>
-    Additional description in consecutive paragraphs separated by HTML 
-    paragraph breaks, as necessary.
-    <p>
-    Type "JavaDoc" in the "How Do I?" IDE toolbar for more information on tags.
-    
-  @Remarks
-    Any additional remarks
- */
-int global_data;
-
-
-/* ************************************************************************** */
-/* ************************************************************************** */
-// Section: Local Functions                                                   */
-/* ************************************************************************** */
-/* ************************************************************************** */
-
-/*  A brief description of a section can be given directly below the section
-    banner.
- */
-
-/* ************************************************************************** */
-
-/** 
-  @Function
-    int ExampleLocalFunctionName ( int param1, int param2 ) 
-
-  @Summary
-    Brief one-line description of the function.
-
-  @Description
-    Full description, explaining the purpose and usage of the function.
-    <p>
-    Additional description in consecutive paragraphs separated by HTML 
-    paragraph breaks, as necessary.
-    <p>
-    Type "JavaDoc" in the "How Do I?" IDE toolbar for more information on tags.
-
-  @Precondition
-    List and describe any required preconditions. If there are no preconditions,
-    enter "None."
-
-  @Parameters
-    @param param1 Describe the first parameter to the function.
-    
-    @param param2 Describe the second parameter to the function.
-
-  @Returns
-    List (if feasible) and describe the return values of the function.
-    <ul>
-      <li>1   Indicates an error occurred
-      <li>0   Indicates an error did not occur
-    </ul>
-
-  @Remarks
-    Describe any special behavior not described above.
-    <p>
-    Any additional remarks.
-
-  @Example
-    @code
-    if(ExampleFunctionName(1, 2) == 0)
-    {
-        return 3;
+void runSM(void) {
+    switch (curState) {
+        case(Up):
+            if (PinA && !PinB) {
+                curState = Right;
+                counter++;
+            }
+            if (!PinA && PinB) {
+                curState = Left;
+                counter--;
+            }
+            break;
+        case(Right):
+            if (PinA && PinB) {
+                curState = Down;
+                counter++;
+            }
+            if (!PinA && !PinB) {
+                curState = Up;
+                counter--;
+            }
+            break;
+        case(Down):
+            if (!PinA && PinB) {
+                curState = Left;
+                counter++;
+            }
+            if (PinA && !PinB) {
+                curState = Right;
+                counter--;
+            }
+            break;
+        case(Left):
+            if (!PinA && !PinB) {
+                curState = Up;
+                counter++;
+            }
+            if (PinA && PinB) {
+                curState = Down;
+                counter--;
+            }
+            break;
     }
- */
-static int ExampleLocalFunction(int param1, int param2) {
-    return 0;
 }
 
-
-/* ************************************************************************** */
-/* ************************************************************************** */
-// Section: Interface Functions                                               */
-/* ************************************************************************** */
-/* ************************************************************************** */
-
-/*  A brief description of a section can be given directly below the section
-    banner.
+/**
+ * @function QEI_Init(void)
+ * @param none
+ * @brief  Enables the Change Notify peripheral and sets up the interrupt, anything
+ *         else that needs to be done to initialize the module. 
+ * @return SUCCESS or ERROR (as defined in BOARD.h)
  */
+char QEI_Init(void) {
+    // INIT Change notify
+    CNCONbits.ON = 1; // Change Notify On
+    CNENbits.CNEN15 = 1; //enable one phase
+    CNENbits.CNEN16 = 1; //enable other phase
+    int temp = PORTD; // this is intentional to ensure a interrupt occur immediately upon enabling
+    IFS1bits.CNIF = 0; // clear interrupt flag
+    IPC6bits.CNIP = 1; //set priority
+    IPC6bits.CNIS = 3; // and sub priority
+    IEC1bits.CNIE = 1; // enable change notify
+    curState = Up;
+    counter = 0;
 
-// *****************************************************************************
-
-/** 
-  @Function
-    int ExampleInterfaceFunctionName ( int param1, int param2 ) 
-
-  @Summary
-    Brief one-line description of the function.
-
-  @Remarks
-    Refer to the example_file.h interface header for function usage details.
- */
-int ExampleInterfaceFunction(int param1, int param2) {
-    return 0;
 }
 
+void __ISR(_CHANGE_NOTICE_VECTOR) ChangeNotice_Handler(void) {
+    static char readPort = 0;
+    readPort = PORTD; // this read is required to make the interrupt work
+    IFS1bits.CNIF = 0;
+    //anything else that needs to happen goes here
+    printf("hello");
+    //    PinA = (readPort >> 6)&1;
+    //    PinB = (readPort >> 7)&1;
+    //    if (counter > 23) {
+    //        QEI_ResetPosition();
+    //    }
+    //    runSM();
+    //    PWM_SetDutyCycle(PWM_PORTY10, (LED_R[counter]*1000 / 255));
+    //    PWM_SetDutyCycle(PWM_PORTY04, (LED_G[counter]*1000 / 255));
+    //    PWM_SetDutyCycle(PWM_PORTY12, (LED_B[counter]*1000 / 255));
+    //     printf("%i",QEI_GetPosition());
 
-/* *****************************************************************************
- End of File
+}
+
+/**
+ * @function QEI_GetPosition(void) 
+ * @param none
+ * @brief This function returns the current count of the Quadrature Encoder in ticks.      
  */
+int QEI_GetPosition(void) {
+    return counter;
+}
+
+/**
+ * @Function QEI_ResetPosition(void) 
+ * @param  none
+ * @return none
+ * @brief  Resets the encoder such that it starts counting from 0.
+ */
+void QEI_ResetPosition() {
+    counter = 0;
+}
