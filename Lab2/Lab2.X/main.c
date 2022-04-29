@@ -21,11 +21,15 @@ int main(void) {
     SERIAL_Init();
     PWM_Init();
     QEI_Init();
+    TIMERS_Init();
+    PING_Init();
 
     // add pins
     PWM_AddPins(PWM_PORTY10);
     PWM_AddPins(PWM_PORTY04);
     PWM_AddPins(PWM_PORTY12);
+    
+    PWM_AddPins(PWM_PORTZ06);
     
     
     PWM_SetFrequency(PWM_1KHZ);
