@@ -21,11 +21,19 @@
 
 // defines for different parts 
 //#define PART1
-#define PART2
-//#define PART3
+//#define PART2
+#define PART3
 
-int tone;
-void makeMusic(void){
+/******************
+ VARIABLES 
+ ******************/
+int out;    // variable for output in PART3
+int tone;   // tone variable for music function in PART2
+
+/******************
+ HELPER FUNCTIONS
+ ******************/
+void makeMusic(void){   // Part 2.3 function
      while (1) { // Updates the Frequency every 40 milliseconds
         if (TIMERS_GetMilliSeconds() % 40 == 0) {
             // setting the tone using the distance
@@ -49,6 +57,7 @@ int main(void) {
     SERIAL_Init();
     PWM_Init();
     ToneGeneration_Init();
+    AD_Init();
 
     /*****
     Part1
@@ -71,7 +80,23 @@ int main(void) {
      Part3
      *****/
 #ifdef PART3
+    AD_AddPins(AD_A0);
     
+    int i = 0;
+    int average = 0;
+    while(1){
+        average += AD_ReadADPin(AD_A0);
+        if(i>5000){
+            if(abs(average/5000) < 7){
+                printf("%i\n\r", abs(average/5000));
+            }
+            //out = average/5000;
+            //printf("%i\n\r", out);
+            average = 0;
+            i = 0;
+        }
+        i++;
+    }
 #endif
 
 
