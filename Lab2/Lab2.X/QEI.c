@@ -36,41 +36,41 @@ int LED_B[] = {0, 0, 0, 0, 0, 32, 121, 193, 255, 255, 255, 255, 255, 255, 255, 2
 void runSM(void) {
     switch (curState) {
         case(Up):
-            if ((PinA==1) && (PinB==0)) {
+            if ((PinA == 1) && (PinB == 0)) {
                 curState = Right;
                 counter++;
             }
-            if ((PinA==0) && (PinB==1)) {
+            if ((PinA == 0) && (PinB == 1)) {
                 curState = Left;
                 counter--;
             }
             break;
         case(Right):
-            if ((PinA==1) && (PinB==1)) {
+            if ((PinA == 1) && (PinB == 1)) {
                 curState = Down;
                 counter++;
             }
-            if ((PinA==0) && (PinB==0)) {
+            if ((PinA == 0) && (PinB == 0)) {
                 curState = Up;
                 counter--;
             }
             break;
         case(Down):
-            if ((PinA==0) && (PinB==1)) {
+            if ((PinA == 0) && (PinB == 1)) {
                 curState = Left;
                 counter++;
             }
-            if ((PinA==1) && (PinB==0)) {
+            if ((PinA == 1) && (PinB == 0)) {
                 curState = Right;
                 counter--;
             }
             break;
         case(Left):
-            if ((PinA==0) && (PinB==0)) {
+            if ((PinA == 0) && (PinB == 0)) {
                 curState = Up;
                 counter++;
             }
-            if ((PinA==1) && (PinB==1)) {
+            if ((PinA == 1) && (PinB == 1)) {
                 curState = Down;
                 counter--;
             }
@@ -95,6 +95,10 @@ char QEI_Init(void) {
     IPC6bits.CNIP = 1; //set priority
     IPC6bits.CNIS = 3; // and sub priority
     IEC1bits.CNIE = 1; // enable change notify
+    PWM_AddPins(PWM_PORTY10);
+    PWM_AddPins(PWM_PORTY04);
+    PWM_AddPins(PWM_PORTY12);
+    PWM_SetFrequency(PWM_1KHZ);
     curState = Down;
     counter = 0;
 
@@ -105,20 +109,20 @@ void __ISR(_CHANGE_NOTICE_VECTOR) ChangeNotice_Handler(void) {
     readPort = PORTD; // this read is required to make the interrupt work
     IFS1bits.CNIF = 0;
     //anything else that needs to happen goes here
-        PinA = PORTDbits.RD6;
-        PinB = PORTDbits.RD7;
-        runSM();
-        if (counter > 23) {
-            QEI_ResetPosition();
-        }
-        if (counter < 0){
-            counter = 23;
-        }
-        PWM_SetDutyCycle(PWM_PORTY10, (LED_R[counter]*1000 / 255));
-        PWM_SetDutyCycle(PWM_PORTY04, (LED_G[counter]*1000 / 255));
-        PWM_SetDutyCycle(PWM_PORTY12, (LED_B[counter]*1000 / 255));
-         printf("counter: %i\n", QEI_GetPosition());
-//         printf("PinA: %i, PinB: %i\n",PinA, PinB);
+    PinA = PORTDbits.RD6;
+    PinB = PORTDbits.RD7;
+    runSM();
+    if (counter > 23) {
+        QEI_ResetPosition();
+    }
+    if (counter < 0) {
+        counter = 23;
+    }
+    PWM_SetDutyCycle(PWM_PORTY10, (LED_R[counter]*1000 / 255));
+    PWM_SetDutyCycle(PWM_PORTY04, (LED_G[counter]*1000 / 255));
+    PWM_SetDutyCycle(PWM_PORTY12, (LED_B[counter]*1000 / 255));
+    printf("counter: %i\n", QEI_GetPosition());
+    //         printf("PinA: %i, PinB: %i\n",PinA, PinB);
 
 }
 
