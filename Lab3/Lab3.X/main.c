@@ -11,17 +11,17 @@
 // including common headers
 #include "BOARD.h"
 #include "serial.h"
-#include "pwm.h"
 #include <xc.h>
 #include <I2C.h>
 #include <stdio.h>
-#include "AD.h"
 #include "BNO055.h"
 #include "timers.h"
 
 // defines for different parts 
 //#define PART2
 #define PART3
+//#define PART3_1
+#define PART3_2
 //#define PART4
 
 /******************
@@ -33,6 +33,10 @@ int zMag; // the z axis magnetic field value
 int z_arr[100]; // array to calculate the average of all the z acceleration values
 double z_ave; // average of all the z axis acceleration values
 double z_Gave; // average for gyro
+double sumz; // helper variable for gyro average 
+double z_0; // initial position of gyro
+double z; // updated position of gyro
+double yaw; // roll angle of gyro
 
 // y-axis variables
 int yAccel; // the y axis acceleration value
@@ -40,6 +44,10 @@ int yMag; // the y axis magnetic field value
 int y_arr[100]; // array to calculate the average of all the y acceleration values
 double y_ave; // average of all the x axis acceleration values
 double y_Gave; // average for gyro
+double sumy; // helper variable for gyro average 
+double y_0; // initial position of gyro
+double y; // updated position of gyro
+double roll; // pitch angle of gyro
 
 // x-axis variables
 int xAccel; // the x axis acceleration value
@@ -47,6 +55,10 @@ int xMag; // the x axis magnetic field value
 int x_arr[100]; // array to calculate the average of all the0 x acceleration values
 double x_ave; // average of all the x axis acceleration values
 double x_Gave; // average for gyro
+double sumx; // helper variable for gyro average 
+double x_0; // initial position of gyro
+double x; // updated position of gyro
+double pitch; // pitch angle of gyro
 
 // loop helper variables
 int i = 0; // loop to add components to array
@@ -92,20 +104,6 @@ float printZMag() {
     return z_ave;
 }
 
-float printZGyro() {
-    while (1) {
-        sum += BNO055_ReadGyroZ();
-        i++;
-        if (TIMERS_GetMilliSeconds() % 1200000 < 3) {
-            break;
-        }
-    }
-    z_Gave = sum / i;
-    sum = 0;
-    i = 0;
-    return z_Gave;
-}
-
 // y-axis functions
 
 float printYAccel() {
@@ -140,20 +138,6 @@ float printYMag() {
     sum = 0;
     i = 0;
     return z_ave;
-}
-
-float printYGyro() {
-while (1) {
-        sum += BNO055_ReadGyroY();
-        i++;
-        if (TIMERS_GetMilliSeconds() % 10000 < 3) {
-            break;
-        }
-    }
-    y_Gave = sum / i;
-    sum = 0;
-    i = 0;
-    return y_Gave;
 }
 
 // x-axis functions
@@ -192,28 +176,17 @@ float printXMag() {
     return z_ave;
 }
 
-float printXGyro() {
-while (1) {
-        sum += BNO055_ReadGyroX();
-        i++;
-        if (TIMERS_GetMilliSeconds() % 10000 < 3) {
-            break;
-        }
-    }
-    x_Gave = sum / i;
-    sum = 0;
-    i = 0;
-    return x_Gave;
-}
-
 /******************
  MAIN
  ******************/
 int main(void) {
     // initializing libraries
     BOARD_Init();
+    printf("dick\n\r");
     BNO055_Init();
     TIMERS_Init();
+    printf("dick2\n\r");
+
     /*****
      Part2
      *****/
@@ -235,11 +208,74 @@ int main(void) {
      *****/
 #ifdef PART3
     // 
-    printf("Logging data for an hour");
+#ifdef PART3_1
+    printf("Logging data for an hour\n\r");
     while (1) {
-        printf("x gyro: %f | y gyro: %f | z gyro: %f\r\n", printXGyro(),printYGyro(),printZGyro());
+        while (1) {
+            sumx += BNO055_ReadGyroX();
+            sumy += BNO055_ReadGyroY();
+            sumz += BNO055_ReadGyroZ();
+            i++;
+            if (TIMERS_GetMilliSeconds() % 120000 < 3) {
+                break;
+            }
+        }
+        x_Gave = sumx / i;
+        y_Gave = sumy / i;
+        z_Gave = sumz / i;
+        sumx = 0;
+        sumy = 0;
+        sumz = 0;
+        i = 0;
+        printf("x gyro: %f | y gyro: %f | z gyro: %f\r\n", x_Gave, y_Gave, z_Gave);
+    }
+#endif
+#ifdef PART3_2
+    printf("part3.2\n\r");
+    int currtime = TIMERS_GetMilliSeconds();
+    int tentime = TIMERS_GetMilliSeconds();
+    int prevtime = TIMERS_GetMilliSeconds();
+    while (1) {
+        currtime = TIMERS_GetMilliSeconds();
+        if ((currtime - prevtime) >= 20) {
+            sumx += BNO055_ReadGyroX();
+            sumy += BNO055_ReadGyroY();
+            sumz += BNO055_ReadGyroZ();
+            i++;
+            prevtime = currtime;
+        }
+        if ((currtime - tentime) >= 10000) {
+            tentime = currtime;
+            break;
+        }
+    }
+    x_Gave = sumx / i;
+    y_Gave = sumy / i;
+    z_Gave = sumz / i;
+    sumx = 0;
+    sumy = 0;
+    sumz = 0;
+    i = 0;
+    tentime = TIMERS_GetMilliSeconds();
+    prevtime = TIMERS_GetMilliSeconds();
+    while (1) {
+        currtime = TIMERS_GetMilliSeconds();
+        if ((currtime - prevtime) >= 20) {
+            x_0 = BNO055_ReadGyroX();
+            y_0 = BNO055_ReadGyroY();
+            z_0 = BNO055_ReadGyroZ();
+            x = x_0 - x_Gave;
+            y = y_0 - y_Gave;
+            z = z_0 - z_Gave;
+            yaw += ((250 * z * 0.02) / 32767);
+            pitch += ((250 * x * 0.02) / 32767);
+            roll += ((250 * y * 0.02) / 32767);
+            printf("x gyro: %f | y gyro: %f | z gyro: %f\r\n", pitch, roll, yaw);
+            prevtime = currtime;
+        }
     }
 
+#endif
 #endif
 
     /*****

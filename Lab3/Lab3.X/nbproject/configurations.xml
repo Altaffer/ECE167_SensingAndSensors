@@ -4,9 +4,7 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
-      <itemPath>../../Common/AD.h</itemPath>
       <itemPath>../../Common/BOARD.h</itemPath>
-      <itemPath>../../Common/pwm.h</itemPath>
       <itemPath>../../Common/serial.h</itemPath>
       <itemPath>../../Common/BNO055.h</itemPath>
       <itemPath>../../Common/I2C.h</itemPath>
@@ -19,9 +17,7 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
-      <itemPath>../../Common/AD.c</itemPath>
       <itemPath>../../Common/BOARD.c</itemPath>
-      <itemPath>../../Common/pwm.c</itemPath>
       <itemPath>../../Common/serial.c</itemPath>
       <itemPath>../../Common/BNO055.c</itemPath>
       <itemPath>main.c</itemPath>
@@ -802,6 +798,7 @@
         <property key="debugoptions.debug-startup" value="Use system settings"/>
         <property key="debugoptions.reset-behaviour" value="Use system settings"/>
         <property key="debugoptions.useswbreakpoints" value="false"/>
+        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="lastid" value=""/>
         <property key="memories.aux" value="false"/>
